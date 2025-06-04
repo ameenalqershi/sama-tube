@@ -1,0 +1,28 @@
+<variant
+    name="debug"
+    useSupportLibraryVectorDrawables="true"
+    package="com.example.snaptube"
+    minSdkVersion="26"
+    targetSdkVersion="34"
+    debuggable="true"
+    mergedManifest="/home/ameen/Desktop/new-snaptube/snaptube-android/build/app/intermediates/merged_manifest/debug/processDebugMainManifest/AndroidManifest.xml"
+    partialResultsDir="/home/ameen/Desktop/new-snaptube/snaptube-android/build/app/intermediates/unit_test_lint_partial_results/debug/lintAnalyzeDebugUnitTest/out"
+    desugaredMethodsFiles="/home/ameen/.gradle/caches/8.10.2/transforms/71dbb04ab8bb3a52961ebc3de6ea9222/transformed/desugar_jdk_libs_configuration-2.0.4-desugar-lint.txt:/home/ameen/.gradle/caches/8.10.2/transforms/9df0d7045fc96f3d26aa4767b899bb6f/transformed/D8BackportedDesugaredMethods.txt">
+  <buildFeatures
+      coreLibraryDesugaring="true"
+      namespacing="REQUIRED"/>
+  <sourceProviders>
+  </sourceProviders>
+  <testSourceProviders>
+    <sourceProvider
+        manifests="src/test/AndroidManifest.xml"
+        javaDirectories="src/test/java:src/testDebug/java:src/test/kotlin:src/testDebug/kotlin"
+        assetsDirectories="src/test/assets:src/testDebug/assets"
+        unitTest="true"/>
+  </testSourceProviders>
+  <testFixturesSourceProviders>
+  </testFixturesSourceProviders>
+  <artifact
+      type="UNIT_TEST">
+  </artifact>
+</variant>

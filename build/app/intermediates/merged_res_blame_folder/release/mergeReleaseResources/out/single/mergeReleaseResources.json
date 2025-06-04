@@ -1,0 +1,62 @@
+[
+    {
+        "merged": "com.example.snaptube.app-release-65:/xml_file_paths.xml.flat",
+        "source": "com.example.snaptube.app-main-59:/xml/file_paths.xml"
+    },
+    {
+        "merged": "com.example.snaptube.app-release-65:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "com.example.snaptube.app-main-59:/mipmap-xxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.snaptube.app-release-65:/drawable_ic_pause.xml.flat",
+        "source": "com.example.snaptube.app-main-59:/drawable/ic_pause.xml"
+    },
+    {
+        "merged": "com.example.snaptube.app-release-65:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "com.example.snaptube.app-main-59:/mipmap-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.snaptube.app-release-65:/drawable-v21_launch_background.xml.flat",
+        "source": "com.example.snaptube.app-main-59:/drawable-v21/launch_background.xml"
+    },
+    {
+        "merged": "com.example.snaptube.app-release-65:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "com.example.snaptube.app-main-59:/mipmap-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.snaptube.app-release-65:/drawable_ic_error.xml.flat",
+        "source": "com.example.snaptube.app-main-59:/drawable/ic_error.xml"
+    },
+    {
+        "merged": "com.example.snaptube.app-release-65:/drawable_ic_refresh.xml.flat",
+        "source": "com.example.snaptube.app-main-59:/drawable/ic_refresh.xml"
+    },
+    {
+        "merged": "com.example.snaptube.app-release-65:/drawable_ic_share.xml.flat",
+        "source": "com.example.snaptube.app-main-59:/drawable/ic_share.xml"
+    },
+    {
+        "merged": "com.example.snaptube.app-release-65:/drawable_ic_download_done.xml.flat",
+        "source": "com.example.snaptube.app-main-59:/drawable/ic_download_done.xml"
+    },
+    {
+        "merged": "com.example.snaptube.app-release-65:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "com.example.snaptube.app-main-59:/mipmap-mdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.snaptube.app-release-65:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "com.example.snaptube.app-main-59:/mipmap-xhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.snaptube.app-release-65:/drawable_ic_cancel.xml.flat",
+        "source": "com.example.snaptube.app-main-59:/drawable/ic_cancel.xml"
+    },
+    {
+        "merged": "com.example.snaptube.app-release-65:/drawable_ic_download.xml.flat",
+        "source": "com.example.snaptube.app-main-59:/drawable/ic_download.xml"
+    },
+    {
+        "merged": "com.example.snaptube.app-release-65:/drawable_ic_play.xml.flat",
+        "source": "com.example.snaptube.app-main-59:/drawable/ic_play.xml"
+    }
+]
