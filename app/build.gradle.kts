@@ -115,8 +115,8 @@ dependencies {
     
     // YouTube-DL Android
     implementation("io.github.junkfood02.youtubedl-android:library:0.17.4")
-    // implementation("io.github.junkfood02.youtubedl-android:ffmpeg:0.17.4")
-    // implementation("io.github.junkfood02.youtubedl-android:aria2c:0.17.4") // اختياري
+    implementation("io.github.junkfood02.youtubedl-android:ffmpeg:0.17.4")
+    implementation("io.github.junkfood02.youtubedl-android:aria2c:0.17.4") // اختياري
     
     // JSON
     implementation("com.google.code.gson:gson:2.10.1")

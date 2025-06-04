@@ -114,6 +114,16 @@ class VideoInfoExtractor(
                     addOption("--no-download")
                     addOption("--no-playlist")
                     addOption("--no-warnings")
+                    // إضافة User-Agent لحل مشكلة HTTP 403
+                    addOption("--user-agent", "Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36")
+                    // تعطيل التحقق من SSL
+                    addOption("--no-check-certificates")
+                    // استخدام IPv4 فقط
+                    addOption("--force-ipv4")
+                    // إعادة المحاولة
+                    addOption("--retries", "3")
+                    // timeout
+                    addOption("--socket-timeout", "30")
                 }
                 
                 val response = YoutubeDL.getInstance().execute(request)
@@ -325,20 +335,50 @@ class VideoInfoExtractor(
     private suspend fun extractWithYtDlp(url: String): VideoInfo {
         return withContext(Dispatchers.IO) {
             try {
-                // إنشاء YoutubeDL request
+                // إنشاء YoutubeDL request مع إعدادات محسنة
                 val request = YoutubeDLRequest(url).apply {
                     addOption("--dump-json")
                     addOption("--no-download") 
                     addOption("--no-playlist")
                     addOption("--ignore-errors")
+                    // إضافة User-Agent لحل مشكلة HTTP 403
+                    addOption("--user-agent", "Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36")
+                    // تعطيل التحقق من SSL للمواقع التي لديها مشاكل شهادات
+                    addOption("--no-check-certificates")
+                    // استخدام IPv4 فقط لتجنب مشاكل IPv6
+                    addOption("--force-ipv4")
+                    // إعادة المحاولة في حالة الفشل
+                    addOption("--retries", "3")
+                    // تحديد timeout
+                    addOption("--socket-timeout", "30")
+                    // إعدادات خاصة بالمنصات
+                    when (detectPlatform(url)) {
+                        "youtube" -> {
+                            // حل مشاكل YouTube المحددة
+                            addOption("--youtube-skip-dash-manifest")
+                        }
+                        "instagram" -> {
+                            // إعدادات Instagram محددة
+                            addOption("--http-chunk-size", "10M")
+                        }
+                        "tiktok" -> {
+                            // إعدادات TikTok محددة
+                            addOption("--http-chunk-size", "5M")
+                        }
+                    }
                 }
+                
+                Log.d(TAG, "تنفيذ YoutubeDL request للرابط: $url")
                 
                 // تنفيذ الطلب
                 val response = YoutubeDL.getInstance().execute(request)
                 
                 if (response.exitCode != 0) {
+                    Log.e(TAG, "YoutubeDL خطأ: ${response.err}")
                     throw RuntimeException("فشل في استخراج معلومات الفيديو: ${response.err}")
                 }
+                
+                Log.d(TAG, "YoutubeDL نجح، طول الناتج: ${response.out.length}")
                 
                 // تحليل النتيجة
                 parseVideoInfo(response.out, url)
@@ -347,6 +387,60 @@ class VideoInfoExtractor(
                 Log.e(TAG, "خطأ في استخراج معلومات الفيديو باستخدام YoutubeDL", e)
                 // fallback إلى طريقة بديلة
                 extractVideoInfoFallback(url)
+            }
+        }
+    }
+
+    /**
+     * الحصول على الـ base URL للموقع
+     */
+    private fun getBaseUrl(url: String): String {
+        return try {
+            val urlObj = URL(url)
+            "${urlObj.protocol}://${urlObj.host}"
+        } catch (e: Exception) {
+            url
+        }
+    }
+
+    /**
+     * استخراج معلومات قائمة التشغيل باستخدام yt-dlp
+     */
+    private suspend fun extractPlaylistWithYtDlp(url: String): PlaylistInfo {
+        return withContext(Dispatchers.IO) {
+            try {
+                // إنشاء YoutubeDL request للـ playlist
+                val request = YoutubeDLRequest(url).apply {
+                    addOption("--dump-json")
+                    addOption("--flat-playlist")
+                    addOption("--ignore-errors")
+                    // إضافة User-Agent لحل مشكلة HTTP 403
+                    addOption("--user-agent", "Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36")
+                    // إضافة Referer للمواقع التي تتطلبه
+                    addOption("--add-header", "Referer:${getBaseUrl(url)}")
+                    // استخدام cookies إذا كانت متاحة
+                    addOption("--cookies-from-browser", "chrome")
+                    // تعطيل التحقق من SSL للمواقع التي لديها مشاكل شهادات
+                    addOption("--no-check-certificates")
+                    // استخدام IPv4 فقط لتجنب مشاكل IPv6
+                    addOption("--force-ipv4")
+                    // إعادة المحاولة في حالة الفشل
+                    addOption("--retries", "3")
+                    // تحديد timeout
+                    addOption("--socket-timeout", "30")
+                }
+                
+                val response = YoutubeDL.getInstance().execute(request)
+                
+                if (response.exitCode != 0) {
+                    throw RuntimeException("فشل في استخراج معلومات قائمة التشغيل: ${response.err}")
+                }
+                
+                parsePlaylistInfo(response.out)
+                
+            } catch (e: Exception) {
+                Log.e(TAG, "خطأ في استخراج معلومات قائمة التشغيل باستخدام yt-dlp", e)
+                throw e
             }
         }
     }

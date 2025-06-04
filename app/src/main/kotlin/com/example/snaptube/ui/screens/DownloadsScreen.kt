@@ -73,7 +73,12 @@ fun DownloadsScreen(
                     ) { download ->
                         DownloadItem(
                             download = download,
-                            onDeleteClick = { viewModel.deleteDownload(download.id) }
+                            onDeleteClick = { viewModel.deleteDownload(download.id) },
+                            onItemClick = { 
+                                if (download.status == DownloadStatus.COMPLETED) {
+                                    viewModel.openFile(download.id)
+                                }
+                            }
                         )
                     }
                 }
@@ -89,10 +94,13 @@ fun DownloadsScreen(
 @Composable
 private fun DownloadItem(
     download: DownloadTask,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    onItemClick: () -> Unit = {}
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth(),
+        onClick = onItemClick,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
         ),

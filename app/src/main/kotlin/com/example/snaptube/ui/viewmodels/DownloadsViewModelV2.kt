@@ -9,12 +9,20 @@ import com.example.snaptube.download.isCompleted
 import com.example.snaptube.download.isError
 import com.example.snaptube.download.isCanceled
 import com.example.snaptube.ui.components.UiAction
+import com.example.snaptube.utils.FileUtils
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import timber.log.Timber
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
+import java.io.File
 
 class DownloadsViewModelV2(
     private val taskDownloader: TaskDownloaderV2
-) : ViewModel() {
+) : ViewModel(), KoinComponent {
+
+    // الحصول على FileUtils من Koin
+    private val fileUtils: FileUtils = get()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -203,8 +211,21 @@ class DownloadsViewModelV2(
     }
 
     private fun openFile(path: String) {
-        // TODO: Implement file opening with system default app
-        // This would typically use Android's Intent.ACTION_VIEW
+        viewModelScope.launch {
+            try {
+                val file = File(path)
+                if (file.exists()) {
+                    fileUtils.openFile(file)
+                    Timber.d("فتح الملف: $path")
+                } else {
+                    _errorMessage.value = "الملف غير موجود: $path"
+                    Timber.w("الملف غير موجود: $path")
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "خطأ في فتح الملف: ${e.message}"
+                Timber.e(e, "خطأ في فتح الملف: $path")
+            }
+        }
     }
 
     private fun shareFile(path: String) {

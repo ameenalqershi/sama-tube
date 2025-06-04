@@ -346,12 +346,28 @@ class FileUtils(private val context: Context) {
             
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 setDataAndType(uri, getMimeType(file))
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             
-            context.startActivity(intent)
+            // Create chooser to show available apps
+            val chooser = Intent.createChooser(intent, "فتح بواسطة").apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            
+            context.startActivity(chooser)
+            Timber.d("Opening file: ${file.path} with MIME type: ${getMimeType(file)}")
         } catch (e: Exception) {
             Timber.e(e, "Error opening file: ${file.path}")
+            // Try alternative approach if FileProvider fails
+            try {
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(Uri.fromFile(file), getMimeType(file))
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(intent)
+            } catch (fallbackError: Exception) {
+                Timber.e(fallbackError, "Fallback method also failed")
+            }
         }
     }
     

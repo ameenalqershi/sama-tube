@@ -8,17 +8,20 @@ import com.example.snaptube.download.DownloadState
 import com.example.snaptube.repository.DownloadRepository
 import com.example.snaptube.database.entities.DownloadEntity
 import com.example.snaptube.database.entities.toDownloadTask
+import com.example.snaptube.utils.FileUtils
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
+import java.io.File
 
 class DownloadsViewModel : ViewModel(), KoinComponent {
     
     // الحصول على التبعيات من Koin
     private val downloadManager: DownloadManager = get()
     private val downloadRepository: DownloadRepository = get()
+    private val fileUtils: FileUtils = get()
     
     private val _uiState = MutableStateFlow(DownloadsUiState())
     val uiState: StateFlow<DownloadsUiState> = _uiState.asStateFlow()
@@ -156,6 +159,36 @@ class DownloadsViewModel : ViewModel(), KoinComponent {
         }
     }
     
+    fun openFile(downloadId: String) {
+        viewModelScope.launch {
+            try {
+                val download = downloadRepository.getDownloadById(downloadId)
+                if (download != null) {
+                    val file = File(download.outputPath)
+                    if (file.exists()) {
+                        fileUtils.openFile(file)
+                        Timber.d("فتح الملف: ${download.title}")
+                    } else {
+                        _uiState.value = _uiState.value.copy(
+                            error = "الملف غير موجود: ${download.title}"
+                        )
+                        Timber.w("الملف غير موجود: ${download.outputPath}")
+                    }
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        error = "لم يتم العثور على التحميل"
+                    )
+                    Timber.w("تحميل غير موجود: $downloadId")
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = "خطأ في فتح الملف: ${e.message}"
+                )
+                Timber.e(e, "خطأ في فتح الملف")
+            }
+        }
+    }
+
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
     }

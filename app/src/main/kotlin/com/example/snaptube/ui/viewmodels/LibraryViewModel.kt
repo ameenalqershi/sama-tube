@@ -6,6 +6,7 @@ import com.example.snaptube.models.VideoInfo
 import com.example.snaptube.repository.DownloadRepository
 import com.example.snaptube.repository.VideoInfoRepository
 import com.example.snaptube.database.entities.DownloadEntity
+import com.example.snaptube.utils.FileUtils
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -18,6 +19,7 @@ class LibraryViewModel : ViewModel(), KoinComponent {
     // الحصول على التبعيات من Koin
     private val downloadRepository: DownloadRepository = get()
     private val videoInfoRepository: VideoInfoRepository = get()
+    private val fileUtils: FileUtils = get()
     
     private val _uiState = MutableStateFlow(LibraryUiState())
     val uiState: StateFlow<LibraryUiState> = _uiState.asStateFlow()
@@ -119,13 +121,52 @@ class LibraryViewModel : ViewModel(), KoinComponent {
     }
     
     fun shareFile(itemId: String) {
-        // سيتم تنفيذها لاحقاً مع UI
-        Timber.d("مشاركة الملف: $itemId")
+        viewModelScope.launch {
+            try {
+                val item = _uiState.value.allItems.find { it.id == itemId }
+                if (item != null) {
+                    val file = File(item.filePath)
+                    if (file.exists()) {
+                        fileUtils.shareFile(file)
+                        Timber.d("مشاركة الملف: ${item.title}")
+                    } else {
+                        Timber.w("الملف غير موجود: ${item.filePath}")
+                    }
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "خطأ في مشاركة الملف")
+            }
+        }
     }
     
     fun playFile(itemId: String) {
-        // سيتم تنفيذها لاحقاً مع player
-        Timber.d("تشغيل الملف: $itemId")
+        viewModelScope.launch {
+            try {
+                val item = _uiState.value.allItems.find { it.id == itemId }
+                if (item != null) {
+                    val file = File(item.filePath)
+                    if (file.exists()) {
+                        fileUtils.openFile(file)
+                        Timber.d("فتح الملف: ${item.title}")
+                    } else {
+                        _uiState.value = _uiState.value.copy(
+                            error = "الملف غير موجود: ${item.title}"
+                        )
+                        Timber.w("الملف غير موجود: ${item.filePath}")
+                    }
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        error = "لم يتم العثور على الملف"
+                    )
+                    Timber.w("عنصر غير موجود في المكتبة: $itemId")
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = "خطأ في فتح الملف: ${e.message}"
+                )
+                Timber.e(e, "خطأ في فتح الملف")
+            }
+        }
     }
     
     fun sortBy(sortType: LibrarySortType) {

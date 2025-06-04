@@ -25,12 +25,23 @@ class SnaptubeApplication : Application() {
             Timber.plant(Timber.DebugTree())
         }
         
-        // تهيئة YoutubeDL Android
+        // تهيئة YoutubeDL Android مع FFmpeg
         try {
+            // تهيئة YoutubeDL أولاً
             YoutubeDL.getInstance().init(this)
             Timber.d("YoutubeDL initialized successfully")
+            
+            // تحديث YoutubeDL إلى أحدث إصدار (اختياري ويمكن أن يفشل)
+            try {
+                YoutubeDL.getInstance().updateYoutubeDL(this)
+                Timber.d("YoutubeDL updated successfully")
+            } catch (updateException: Exception) {
+                Timber.w(updateException, "YoutubeDL update failed, using bundled version")
+            }
+            
         } catch (e: Exception) {
             Timber.e(e, "Failed to initialize YoutubeDL")
+            // في حالة فشل التهيئة تماماً، لا يمكن تشغيل التحميلات
         }
         
         // بدء Koin مع جميع الوحدات المعرفة

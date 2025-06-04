@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -25,7 +26,6 @@ import com.example.snaptube.download.DownloadState
 import com.example.snaptube.download.Task
 import com.example.snaptube.ui.components.ActionSheet
 import com.example.snaptube.ui.components.DownloadDialog
-import com.example.snaptube.ui.components.DownloadConfig
 import com.example.snaptube.ui.components.VideoCardV2
 import com.example.snaptube.ui.viewmodels.DownloadsViewModelV2
 import com.example.snaptube.utils.DownloadPreferencesManager
@@ -106,43 +106,41 @@ fun DownloadPageV2(
         )
 
         // Filter chips
-        LazyColumn(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(vertical = 8.dp)
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            contentPadding = PaddingValues(vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            item {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Filter.values().forEach { filter ->
-                        FilterChip(
-                            selected = selectedFilter == filter,
-                            onClick = { selectedFilter = filter },
-                            label = {
-                                Text(
-                                    text = buildString {
-                                        append(filter.displayName)
-                                        if (filter != Filter.All) {
-                                            val count = when (filter) {
-                                                Filter.Downloading -> tasks.count { 
-                                                    it.downloadState is Task.DownloadState.FetchingInfo || it.downloadState is Task.DownloadState.Running
-                                                }
-                                                Filter.Completed -> tasks.count { it.downloadState is Task.DownloadState.Completed }
-                                                Filter.Canceled -> tasks.count { it.downloadState is Task.DownloadState.Canceled }
-                                                Filter.Error -> tasks.count { it.downloadState is Task.DownloadState.Error }
-                                                else -> 0
-                                            }
-                                            if (count > 0) append(" ($count)")
-                                        } else {
-                                            if (tasks.isNotEmpty()) append(" (${tasks.size})")
+            items(Filter.values()) { filter ->
+                FilterChip(
+                    selected = selectedFilter == filter,
+                    onClick = { selectedFilter = filter },
+                    label = { 
+                        Text(
+                            text = buildString {
+                                append(filter.displayName)
+                                if (filter != Filter.All) {
+                                    val count = when (filter) {
+                                        Filter.Downloading -> tasks.count { 
+                                            it.downloadState is Task.DownloadState.FetchingInfo || it.downloadState is Task.DownloadState.Running
                                         }
+                                        Filter.Completed -> tasks.count { it.downloadState is Task.DownloadState.Completed }
+                                        Filter.Canceled -> tasks.count { it.downloadState is Task.DownloadState.Canceled }
+                                        Filter.Error -> tasks.count { it.downloadState is Task.DownloadState.Error }
+                                        else -> 0
                                     }
-                                )
-                            }
-                        )
-                    }
-                }
+                                    if (count > 0) append(" ($count)")
+                                } else {
+                                    if (tasks.isNotEmpty()) append(" (${tasks.size})")
+                                }
+                            },
+                            style = MaterialTheme.typography.bodySmall
+                        ) 
+                    },
+                    modifier = Modifier.wrapContentWidth()
+                )
             }
         }
 
@@ -262,29 +260,14 @@ fun DownloadPageV2(
     DownloadDialog(
         isVisible = showDownloadDialog,
         onDismiss = { showDownloadDialog = false },
-        onStartDownload = { url, config ->
-            // Convert DownloadConfig to DownloadPreferences
-            val preferences = com.example.snaptube.download.DownloadPreferences(
-                audioOnly = config.audioOnly,
-                audioFormat = if (config.audioOnly) config.format.extension else preferencesManager.getDownloadPreferences().audioFormat,
-                videoFormat = if (!config.audioOnly) config.format.extension else preferencesManager.getDownloadPreferences().videoFormat,
-                downloadLocation = preferencesManager.getDownloadPreferences().downloadLocation,
-                embedMetadata = config.embedMetadata,
-                embedThumbnail = config.embedThumbnail,
-                embedSubs = config.downloadSubtitles,
-                // Use quality preference mapping
-                formatId = when (config.quality) {
-                    com.example.snaptube.ui.components.VideoQuality.BEST -> "best"
-                    com.example.snaptube.ui.components.VideoQuality.HIGH -> "bestvideo[height<=720]+bestaudio/best[height<=720]"
-                    com.example.snaptube.ui.components.VideoQuality.MEDIUM -> "bestvideo[height<=480]+bestaudio/best[height<=480]"
-                    com.example.snaptube.ui.components.VideoQuality.LOW -> "bestvideo[height<=360]+bestaudio/best[height<=360]"
-                }
-            )
+        onStartDownload = { url, dialogPreferences ->
+            // Convert DialogPreferences to real DownloadPreferences using the built-in method
+            val preferences = dialogPreferences.toDownloadPreferences()
             
+            // Start the download using the real preferences
             viewModel.startDownload(url, preferences)
-            showDownloadDialog = false
         }
-    }
+    )
 }
 
 @Composable
