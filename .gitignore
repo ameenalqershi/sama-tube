@@ -64,3 +64,4 @@ app/release/
 
 # Build variants
 app/build/
+build/
